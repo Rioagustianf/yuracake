@@ -28,7 +28,7 @@ export default function CaraPemesanan() {
     const [openIdx, setOpenIdx] = useState(null);
     const toggle = (idx) => setOpenIdx(openIdx === idx ? null : idx);
     return (
-        <section className="py-12 bg-white">
+        <section className="py-12 bg-pink-300/30">
             <div className="max-w-5xl mx-auto px-4">
                 <h2 className="text-2xl font-bold text-center text-pink-700 mb-8">
                     Cara Pemesanan
@@ -37,7 +37,7 @@ export default function CaraPemesanan() {
                     {steps.map((step, idx) => (
                         <div
                             key={idx}
-                            className="border border-yellow-200 rounded-xl shadow bg-yellow-50"
+                            className="border border-pink-200 rounded-xl shadow bg-pink-50"
                         >
                             <button
                                 type="button"

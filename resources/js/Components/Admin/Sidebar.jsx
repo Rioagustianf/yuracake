@@ -41,7 +41,7 @@ export default function Sidebar() {
         <>
             {/* Mobile toggle button */}
             <button
-                className="md:hidden fixed top-4 left-4 z-50 bg-pink-700 text-white p-2 rounded-lg shadow-lg focus:outline-none"
+                className="md:hidden fixed top-4 left-4 z-50 bg-pink-400 text-white p-2 rounded-lg shadow-lg focus:outline-none"
                 onClick={() => setOpen((v) => !v)}
                 aria-label="Toggle sidebar"
             >
@@ -53,13 +53,13 @@ export default function Sidebar() {
             </button>
             {/* Sidebar */}
             <aside
-                className={`fixed md:sticky z-40 top-0 left-0 h-screen w-64 md:w-64 bg-pink-700 flex flex-col transition-transform duration-300 md:translate-x-0 ${
+                className={`fixed md:sticky z-40 top-0 left-0 h-screen w-64 md:w-64 bg-pink-400 flex flex-col transition-transform duration-300 md:translate-x-0 ${
                     open
                         ? "translate-x-0"
                         : "-translate-x-full md:translate-x-0"
                 }`}
             >
-                <div className="flex items-center gap-2 px-6 py-7 border-b border-pink-600 bg-pink-700">
+                <div className="flex items-center gap-2 px-6 py-7 border-b border-pink-600 bg-pink-400">
                     <img
                         src="/assets/Logo.jpeg"
                         alt="YuraCake"

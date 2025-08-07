@@ -12,7 +12,12 @@ class AuthController extends Controller
 {
     public function showLoginForm()
     {
-        return Inertia::render('Admin/LoginAdmin');
+        return Inertia::render('Customer/Auth/Login', [
+            'auth' => [
+                'user' => auth()->user(),
+            ],
+            'errors' => session('errors') ? session('errors')->getBag('default')->getMessages() : [],
+        ]);
     }
 
     public function login(Request $request)

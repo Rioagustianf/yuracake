@@ -3,7 +3,7 @@ import { Instagram, Facebook, Phone } from "lucide-react";
 
 export default function Footer() {
     return (
-        <footer className="bg-pink-700 text-white py-8 mt-12">
+        <footer className="bg-pink-400 text-white py-8 mt-12">
             <div className="max-w-5xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
                     <div className="font-bold text-lg">Yuracake</div>

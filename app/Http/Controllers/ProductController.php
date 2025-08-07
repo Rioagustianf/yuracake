@@ -15,7 +15,10 @@ class ProductController extends Controller
     {
         $products = Product::all();
         return Inertia::render('User/DaftarKue', [
-            'products' => $products
+            'products' => $products,
+            'auth' => [
+                'user' => auth()->user(),
+            ],
         ]);
     }
 
@@ -54,7 +57,10 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
         return Inertia::render('User/DetailKue', [
-            'product' => $product
+            'product' => $product,
+            'auth' => [
+                'user' => auth()->user(),
+            ],
         ]);
     }
 

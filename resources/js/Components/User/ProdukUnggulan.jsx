@@ -9,7 +9,7 @@ export default function ProdukUnggulan() {
             .then((data) => setProdukList(data));
     }, []);
     return (
-        <section className="py-12 bg-yellow-50">
+        <section className="py-12 bg-pink-300/30">
             <div className="max-w-5xl mx-auto px-4">
                 <h2 className="text-2xl font-bold text-center text-pink-700 mb-8">
                     Produk Unggulan

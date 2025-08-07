@@ -8,6 +8,8 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class OrderController extends Controller
 {
@@ -136,18 +138,151 @@ class OrderController extends Controller
         ]);
     }
 
-    public function laporan()
+    public function laporan(Request $request)
     {
-        $orders = Order::with(['orderItems.product'])->orderByDesc('id')->get();
+        $filter = $request->get('filter', 'all'); // all, daily, weekly, monthly
+        $query = Order::with(['orderItems.product'])->orderByDesc('id');
+        
+        switch ($filter) {
+            case 'daily':
+                $query->whereDate('created_at', today());
+                break;
+            case 'weekly':
+                $query->whereBetween('created_at', [
+                    now()->startOfWeek(),
+                    now()->endOfWeek()
+                ]);
+                break;
+            case 'monthly':
+                $query->whereBetween('created_at', [
+                    now()->startOfMonth(),
+                    now()->endOfMonth()
+                ]);
+                break;
+            default:
+                // all - tidak ada filter tambahan
+                break;
+        }
+        
+        $orders = $query->get();
+        
         return Inertia::render('Admin/Laporan', [
-            'orders' => $orders
+            'orders' => $orders,
+            'filter' => $filter
         ]);
     }
 
     // Export laporan ke Excel
-    public function exportExcel()
+    public function exportExcel(Request $request)
     {
+        $filter = $request->get('filter', 'all');
+        $filename = 'laporan-penjualan';
+        
+        switch ($filter) {
+            case 'daily':
+                $filename .= '-hari-ini';
+                break;
+            case 'weekly':
+                $filename .= '-minggu-ini';
+                break;
+            case 'monthly':
+                $filename .= '-bulan-ini';
+                break;
+            default:
+                $filename .= '-semua-waktu';
+                break;
+        }
+        
+        $filename .= '.xlsx';
+        
         // Pastikan package Maatwebsite\Excel sudah diinstall
-        return \Excel::download(new \App\Exports\LaporanExport, 'laporan-penjualan.xlsx');
+        return \Excel::download(new \App\Exports\LaporanExport($filter), $filename);
+    }
+
+    // Export laporan ke PDF
+    public function exportPdf(Request $request)
+    {
+        $filter = $request->get('filter', 'all');
+        $query = Order::with(['orderItems.product'])->orderByDesc('id');
+        
+        // Apply filter based on time period
+        switch ($filter) {
+            case 'daily':
+                $query->whereDate('created_at', today());
+                break;
+            case 'weekly':
+                $query->whereBetween('created_at', [
+                    now()->startOfWeek(),
+                    now()->endOfWeek()
+                ]);
+                break;
+            case 'monthly':
+                $query->whereBetween('created_at', [
+                    now()->startOfMonth(),
+                    now()->endOfMonth()
+                ]);
+                break;
+            default:
+                // all - tidak ada filter tambahan
+                break;
+        }
+        
+        $orders = $query->get();
+        $totalPenjualan = $orders->sum('total_price');
+        
+        $filename = 'laporan-penjualan';
+        switch ($filter) {
+            case 'daily':
+                $filename .= '-hari-ini';
+                break;
+            case 'weekly':
+                $filename .= '-minggu-ini';
+                break;
+            case 'monthly':
+                $filename .= '-bulan-ini';
+                break;
+            default:
+                $filename .= '-semua-waktu';
+                break;
+        }
+        $filename .= '.pdf';
+        
+        $data = [
+            'orders' => $orders,
+            'totalPenjualan' => $totalPenjualan,
+            'filter' => $filter,
+            'filterLabel' => $this->getFilterLabel($filter),
+            'generatedAt' => now()->format('d/m/Y H:i:s')
+        ];
+        
+        // Generate PDF using DomPDF
+        $html = view('admin.laporan-pdf', $data)->render();
+        
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Arial');
+        
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        return $dompdf->stream($filename);
+    }
+
+    private function getFilterLabel($filter)
+    {
+        switch ($filter) {
+            case 'daily':
+                return 'Hari Ini (' . now()->format('d/m/Y') . ')';
+            case 'weekly':
+                return 'Minggu Ini (' . now()->startOfWeek()->format('d/m/Y') . ' - ' . now()->endOfWeek()->format('d/m/Y') . ')';
+            case 'monthly':
+                return 'Bulan Ini (' . now()->format('F Y') . ')';
+            default:
+                return 'Semua Waktu';
+        }
     }
 }

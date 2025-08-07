@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "@inertiajs/inertia-react";
 import Navbar from "../../Components/User/Navbar";
 
-export default function DetailKue({ product }) {
+export default function DetailKue({ product, auth }) {
     product = product || {
         name: "Kue Coklat Lumer",
         description:
@@ -12,7 +12,7 @@ export default function DetailKue({ product }) {
     };
     return (
         <div className="bg-white min-h-screen">
-            <Navbar />
+            <Navbar auth={auth} />
             <section className="max-w-3xl mx-auto py-12 px-4">
                 <nav className="text-sm mb-4 text-gray-500">
                     <Link href="/" className="hover:text-pink-700">

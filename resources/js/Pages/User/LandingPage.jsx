@@ -7,10 +7,10 @@ import Footer from "../../Components/User/Footer";
 import { Inertia } from "@inertiajs/inertia";
 import React from "react";
 
-export default function LandingPage() {
+export default function LandingPage({ auth }) {
     return (
         <div className="bg-background min-h-screen text-foreground">
-            <Navbar />
+            <Navbar auth={auth} />
             <main>
                 <HeroSection />
                 <Keunggulan />

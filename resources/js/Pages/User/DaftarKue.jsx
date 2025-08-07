@@ -6,7 +6,7 @@ export default function DaftarKue(props) {
     const products = props.products || [];
     return (
         <div className="bg-white min-h-screen">
-            <Navbar />
+            <Navbar auth={props.auth} />
             <section className="max-w-6xl mx-auto py-12 px-4">
                 <nav className="text-sm mb-4 text-gray-500">
                     <Link href="/" className="hover:text-pink-700">
