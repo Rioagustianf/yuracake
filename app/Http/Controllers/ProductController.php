@@ -13,12 +13,16 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::all();
+        $products = Product::withCount(['testimonials as review_count' => function($query) {
+            $query->where('is_approved', true);
+        }])
+        ->withAvg(['testimonials as average_rating' => function($query) {
+            $query->where('is_approved', true);
+        }], 'rating')
+        ->get();
+        
         return Inertia::render('User/DaftarKue', [
             'products' => $products,
-            'auth' => [
-                'user' => auth()->user(),
-            ],
         ]);
     }
 
@@ -55,12 +59,16 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::withCount(['testimonials as review_count' => function($query) {
+            $query->where('is_approved', true);
+        }])
+        ->withAvg(['testimonials as average_rating' => function($query) {
+            $query->where('is_approved', true);
+        }], 'rating')
+        ->findOrFail($id);
+        
         return Inertia::render('User/DetailKue', [
             'product' => $product,
-            'auth' => [
-                'user' => auth()->user(),
-            ],
         ]);
     }
 

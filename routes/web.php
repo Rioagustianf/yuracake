@@ -4,34 +4,28 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\Admin\AuthController;
-use App\Http\Controllers\Customer\AuthController as CustomerAuthController;
 
 Route::get('/', function () {
-    return Inertia::render('User/LandingPage', [
-        'auth' => [
-            'user' => auth()->user(),
-        ],
-    ]);
+    return Inertia::render('User/LandingPage');
 });
-
-// Customer authentication routes
-Route::get('/login', [CustomerAuthController::class, 'showLoginForm'])->name('customer.login');
-Route::post('/login', [CustomerAuthController::class, 'login'])->name('customer.login.submit');
-Route::get('/register', [CustomerAuthController::class, 'showRegistrationForm'])->name('customer.register');
-Route::post('/register', [CustomerAuthController::class, 'register'])->name('customer.register.submit');
-Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('customer.logout');
 
 // Public routes
 Route::get('/daftar-kue', [ProductController::class, 'index'])->name('products.index');
 Route::get('/kue/{id}', [ProductController::class, 'show'])->name('products.show');
 
-// Protected customer routes
-Route::middleware('customer')->group(function () {
-    Route::get('/pesan', [OrderController::class, 'create'])->name('orders.create');
-    Route::post('/pesan', [OrderController::class, 'store'])->name('orders.store');
-    Route::get('/konfirmasi/{id}', [OrderController::class, 'show'])->name('orders.show');
-});
+// Public order routes (no authentication required)
+Route::get('/pesan', [OrderController::class, 'create'])->name('orders.create');
+Route::post('/pesan', [OrderController::class, 'store'])->name('orders.store');
+Route::get('/konfirmasi/{id}', [OrderController::class, 'show'])->name('orders.show');
+
+// Public testimonial routes
+Route::get('/testimonial', [TestimonialController::class, 'create'])->name('testimonials.create');
+Route::post('/testimonial', [TestimonialController::class, 'store'])->name('testimonials.store');
+Route::get('/api/testimonials', [TestimonialController::class, 'index']);
+Route::get('/api/testimonials/featured', [TestimonialController::class, 'featured']);
+Route::get('/api/testimonials/product/{product}', [TestimonialController::class, 'byProduct']);
 
 Route::get('/api/produk-unggulan', [ProductController::class, 'featured']);
 
@@ -50,4 +44,11 @@ Route::middleware('admin')->group(function () {
     Route::get('/admin/laporan/export', [OrderController::class, 'exportExcel']);
     Route::get('/admin/laporan/export-pdf', [OrderController::class, 'exportPdf']);
     Route::put('/admin/pesanan/{id}', [OrderController::class, 'update']);
+    
+    // Admin testimonial routes
+    Route::get('/admin/testimonials', [TestimonialController::class, 'adminIndex'])->name('admin.testimonials');
+    Route::patch('/admin/testimonials/{id}/approval', [TestimonialController::class, 'updateApproval'])->name('admin.testimonials.approval');
+    Route::patch('/admin/testimonials/{id}/featured', [TestimonialController::class, 'updateFeatured'])->name('admin.testimonials.featured');
+    Route::delete('/admin/testimonials/{id}', [TestimonialController::class, 'destroy'])->name('admin.testimonials.destroy');
+    Route::get('/admin/testimonials/stats', [TestimonialController::class, 'getStats'])->name('admin.testimonials.stats');
 });

@@ -6,6 +6,7 @@ import {
     Cake,
     ShoppingCart,
     BarChart2,
+    MessageCircle,
     LogOut,
     Menu,
     X,
@@ -26,6 +27,11 @@ const menu = [
         name: "Pesanan",
         href: "/admin/pesanan",
         icon: <ShoppingCart className="w-5 h-5" />,
+    },
+    {
+        name: "Testimoni",
+        href: "/admin/testimonials",
+        icon: <MessageCircle className="w-5 h-5" />,
     },
     {
         name: "Laporan",
