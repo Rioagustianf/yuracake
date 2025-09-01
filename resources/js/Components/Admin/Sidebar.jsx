@@ -7,6 +7,7 @@ import {
     ShoppingCart,
     BarChart2,
     MessageCircle,
+    Gift,
     LogOut,
     Menu,
     X,
@@ -27,6 +28,11 @@ const menu = [
         name: "Pesanan",
         href: "/admin/pesanan",
         icon: <ShoppingCart className="w-5 h-5" />,
+    },
+    {
+        name: "Promo",
+        href: "/admin/promos",
+        icon: <Gift className="w-5 h-5" />,
     },
     {
         name: "Testimoni",

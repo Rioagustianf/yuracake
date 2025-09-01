@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "@inertiajs/inertia-react";
-import { Star, MessageCircle, Plus } from "lucide-react";
+import { Star, MessageCircle, Plus, Crown, Percent, Tag } from "lucide-react";
 import Navbar from "../../Components/User/Navbar";
+import { formatNumber } from "../../utils/currency";
 
 export default function DetailKue({ product }) {
     const [testimonials, setTestimonials] = useState([]);
@@ -65,7 +66,31 @@ export default function DetailKue({ product }) {
                     </Link>{" "}
                     <span className="mx-2">/</span> {product.name}
                 </nav>
-                <div className="bg-white rounded-2xl shadow-lg flex flex-col md:flex-row overflow-hidden border border-pink-100">
+                <div className="bg-white rounded-2xl shadow-lg flex flex-col md:flex-row overflow-hidden border border-pink-100 relative">
+                    {/* Best Seller Badge */}
+                    {product.is_best_seller && (
+                        <div className="absolute top-4 left-4 z-10">
+                            <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-lg">
+                                <Crown className="w-4 h-4" />
+                                Best Seller
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Promo Badge */}
+                    {product.has_promo && product.promo_discount > 0 && (
+                        <div
+                            className={`absolute top-4 z-10 ${
+                                product.is_best_seller ? "right-4" : "left-4"
+                            }`}
+                        >
+                            <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-lg">
+                                <Percent className="w-4 h-4" />
+                                Promo Aktif
+                            </div>
+                        </div>
+                    )}
+
                     <img
                         src={
                             product.image
@@ -76,14 +101,41 @@ export default function DetailKue({ product }) {
                         className="h-64 w-full md:w-1/2 object-cover rounded-t-2xl md:rounded-l-2xl md:rounded-t-none transition-opacity duration-500"
                     />
                     <div className="p-8 flex-1 flex flex-col">
-                        <div className="font-semibold text-2xl text-pink-700 mb-2">
+                        <div className="font-semibold text-2xl text-pink-700 mb-2 flex items-center gap-2">
                             {product.name}
+                            {product.is_best_seller && (
+                                <Crown className="w-6 h-6 text-yellow-500" />
+                            )}
                         </div>
                         <div className="mb-4">
-                            <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded text-lg font-bold">
-                                Rp{" "}
-                                {Number(product.price).toLocaleString("id-ID")}
-                            </span>
+                            {product.has_promo && product.promo_discount > 0 ? (
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-3">
+                                        <span className="bg-red-100 text-red-700 px-3 py-1 rounded text-2xl font-bold">
+                                            Rp{" "}
+                                            {formatNumber(
+                                                product.discounted_price
+                                            )}
+                                        </span>
+                                        <Tag className="w-5 h-5 text-red-500" />
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-lg text-gray-500 line-through">
+                                            Rp {formatNumber(product.price)}
+                                        </span>
+                                        <span className="bg-red-500 text-white px-2 py-1 rounded text-sm font-bold">
+                                            Hemat Rp{" "}
+                                            {formatNumber(
+                                                product.promo_discount
+                                            )}
+                                        </span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded text-2xl font-bold">
+                                    Rp {formatNumber(product.price)}
+                                </span>
+                            )}
                         </div>
 
                         {/* Rating Section */}

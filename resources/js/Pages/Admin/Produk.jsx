@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import AdminLayout from "../../Components/Admin/AdminLayout";
 import { Inertia } from "@inertiajs/inertia";
+import { Crown } from "lucide-react";
+import { formatNumber } from "../../utils/currency";
 
 export default function Produk({ products = [] }) {
     const [showModal, setShowModal] = useState(false);
@@ -10,6 +12,7 @@ export default function Produk({ products = [] }) {
         price: "",
         stock: "",
         description: "",
+        is_best_seller: false,
         image: null,
     });
     const [errors, setErrors] = useState({});
@@ -22,6 +25,7 @@ export default function Produk({ products = [] }) {
             price: "",
             stock: "",
             description: "",
+            is_best_seller: false,
             image: null,
         });
         setPreview(null);
@@ -35,6 +39,7 @@ export default function Produk({ products = [] }) {
             price: produk.price,
             stock: produk.stock,
             description: produk.description || "",
+            is_best_seller: produk.is_best_seller || false,
             image: null,
         });
         setPreview(produk.image ? `/storage/${produk.image}` : null);
@@ -44,10 +49,12 @@ export default function Produk({ products = [] }) {
     const closeModal = () => setShowModal(false);
 
     const handleChange = (e) => {
-        const { name, value, files } = e.target;
+        const { name, value, files, type, checked } = e.target;
         if (name === "image") {
             setForm({ ...form, image: files[0] });
             setPreview(files[0] ? URL.createObjectURL(files[0]) : null);
+        } else if (type === "checkbox") {
+            setForm({ ...form, [name]: checked });
         } else {
             setForm({ ...form, [name]: value });
         }
@@ -61,6 +68,7 @@ export default function Produk({ products = [] }) {
         data.append("price", form.price);
         data.append("stock", form.stock);
         data.append("description", form.description);
+        data.append("is_best_seller", form.is_best_seller ? "1" : "0");
         if (form.image) data.append("image", form.image);
         if (editData) {
             data.append("_method", "PUT");
@@ -91,6 +99,33 @@ export default function Produk({ products = [] }) {
         }
         if (window.confirm("Yakin ingin menghapus produk ini?")) {
             Inertia.delete(`/admin/produk/${id}`);
+        }
+    };
+
+    const toggleBestSeller = async (productId) => {
+        try {
+            const response = await fetch(
+                `/admin/produk/${productId}/best-seller`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector(
+                            'meta[name="csrf-token"]'
+                        ).content,
+                    },
+                }
+            );
+
+            if (response.ok) {
+                // Refresh the page to show updated data
+                Inertia.reload();
+            } else {
+                alert("Gagal mengubah status best seller");
+            }
+        } catch (error) {
+            console.error("Error toggling best seller:", error);
+            alert("Terjadi kesalahan saat mengubah status best seller");
         }
     };
 
@@ -125,6 +160,9 @@ export default function Produk({ products = [] }) {
                             </th>
                             <th className="px-3 py-2 whitespace-nowrap">
                                 Stok
+                            </th>
+                            <th className="px-3 py-2 whitespace-nowrap">
+                                Best Seller
                             </th>
                             <th className="px-3 py-2 whitespace-nowrap">
                                 Aksi
@@ -168,13 +206,27 @@ export default function Produk({ products = [] }) {
                                         {produk.description}
                                     </td>
                                     <td className="px-3 py-2 whitespace-nowrap">
-                                        Rp{" "}
-                                        {Number(produk.price).toLocaleString(
-                                            "id-ID"
-                                        )}
+                                        Rp {formatNumber(produk.price)}
                                     </td>
                                     <td className="px-3 py-2 whitespace-nowrap">
                                         {produk.stock}
+                                    </td>
+                                    <td className="px-3 py-2 whitespace-nowrap">
+                                        <button
+                                            onClick={() =>
+                                                toggleBestSeller(produk.id)
+                                            }
+                                            className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                                                produk.is_best_seller
+                                                    ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+                                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                            }`}
+                                        >
+                                            <Crown className="w-3 h-3" />
+                                            {produk.is_best_seller
+                                                ? "Best Seller"
+                                                : "Normal"}
+                                        </button>
                                     </td>
                                     <td className="px-3 py-2 whitespace-nowrap space-x-2">
                                         <button
@@ -304,6 +356,19 @@ export default function Produk({ products = [] }) {
                                         {errors.stock}
                                     </div>
                                 )}
+                            </div>
+                            <div>
+                                <label className="flex items-center gap-2 text-sm font-medium">
+                                    <input
+                                        type="checkbox"
+                                        name="is_best_seller"
+                                        checked={form.is_best_seller}
+                                        onChange={handleChange}
+                                        className="rounded border-gray-300 text-pink-600 focus:ring-pink-500"
+                                    />
+                                    <Crown className="w-4 h-4 text-yellow-500" />
+                                    <span>Tandai sebagai Best Seller</span>
+                                </label>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium mb-1">

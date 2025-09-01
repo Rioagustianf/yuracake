@@ -1,6 +1,8 @@
 import React from "react";
 import Navbar from "../../Components/User/Navbar";
 import { Link } from "@inertiajs/inertia-react";
+import { Gift, Tag } from "lucide-react";
+import { formatNumber } from "../../utils/currency";
 
 export default function KonfirmasiPesanan({ order }) {
     if (!order) return null;
@@ -58,19 +60,42 @@ export default function KonfirmasiPesanan({ order }) {
                             {order.order_items.map((item) => (
                                 <li key={item.id}>
                                     {item.product?.name} x {item.quantity} @ Rp{" "}
-                                    {Number(item.unit_price).toLocaleString(
-                                        "id-ID"
-                                    )}{" "}
-                                    = Rp{" "}
-                                    {Number(item.subtotal).toLocaleString(
-                                        "id-ID"
-                                    )}
+                                    {formatNumber(item.unit_price)} = Rp{" "}
+                                    {formatNumber(item.subtotal)}
                                 </li>
                             ))}
                         </ul>
-                        <div className="mt-2 font-bold text-pink-700">
-                            Total: Rp{" "}
-                            {Number(order.total_price).toLocaleString("id-ID")}
+
+                        {/* Order Summary */}
+                        <div className="mt-3 p-3 bg-gray-50 rounded border">
+                            <div className="flex justify-between text-sm">
+                                <span>Subtotal:</span>
+                                <span>
+                                    Rp{" "}
+                                    {formatNumber(
+                                        order.subtotal || order.total_price
+                                    )}
+                                </span>
+                            </div>
+
+                            {order.promo_code && order.promo_discount > 0 && (
+                                <div className="flex justify-between text-sm text-green-600 mt-1">
+                                    <span className="flex items-center gap-1">
+                                        <Tag className="w-3 h-3" />
+                                        Promo ({order.promo_code}):
+                                    </span>
+                                    <span>
+                                        -Rp {formatNumber(order.promo_discount)}
+                                    </span>
+                                </div>
+                            )}
+
+                            <div className="flex justify-between font-bold text-pink-700 border-t border-gray-300 pt-2 mt-2">
+                                <span>Total:</span>
+                                <span>
+                                    Rp {formatNumber(order.total_price)}
+                                </span>
+                            </div>
                         </div>
                     </div>
                     {order.payment_method === "bank_transfer" ? (

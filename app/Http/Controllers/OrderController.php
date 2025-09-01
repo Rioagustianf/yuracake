@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Promo;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Dompdf\Dompdf;
@@ -26,7 +27,13 @@ class OrderController extends Controller
      */
     public function create(Request $request)
     {
-        $products = \App\Models\Product::all();
+        $products = \App\Models\Product::get()
+            ->map(function ($product) {
+                $product->has_promo = $product->has_promo;
+                $product->discounted_price = $product->discounted_price;
+                $product->promo_discount = $product->promo_discount;
+                return $product;
+            });
         return Inertia::render('User/FormulirPemesanan', [
             'products' => $products
         ]);
@@ -43,6 +50,7 @@ class OrderController extends Controller
             'customer_address' => 'required|string',
             'payment_method' => 'required|in:cod,bank_transfer',
             'note' => 'nullable|string',
+            'promo_code' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -50,35 +58,69 @@ class OrderController extends Controller
 
         DB::beginTransaction();
         try {
-            $total = 0;
+            $subtotal = 0;
+            $promoDiscount = 0;
+            $promoCode = null;
+            
+            // Calculate subtotal first
+            foreach ($validated['items'] as $item) {
+                $product = Product::findOrFail($item['product_id']);
+                // Use discounted price if product has active promo
+                $price = $product->has_promo ? $product->discounted_price : $product->price;
+                $subtotal += $price * $item['quantity'];
+            }
+            
+            // Validate and apply promo code if provided
+            if (!empty($validated['promo_code'])) {
+                $promo = Promo::where('promo_code', $validated['promo_code'])
+                    ->active()
+                    ->available()
+                    ->first();
+                    
+                if ($promo && $promo->isValid() && $subtotal >= $promo->min_purchase) {
+                    $promoDiscount = $promo->calculateDiscount($subtotal);
+                    $promoCode = $validated['promo_code'];
+                    
+                    // Increment promo usage
+                    $promo->increment('used_count');
+                }
+            }
+            
+            $totalPrice = $subtotal - $promoDiscount;
+            
             $order = Order::create([
                 'customer_name' => $validated['customer_name'],
                 'customer_phone' => $validated['customer_phone'],
                 'customer_address' => $validated['customer_address'],
                 'payment_method' => $validated['payment_method'],
                 'status' => 'pending',
-                'total_price' => 0, // sementara, update setelah item
+                'subtotal' => $subtotal,
+                'promo_code' => $promoCode,
+                'promo_discount' => $promoDiscount,
+                'total_price' => $totalPrice,
                 'note' => $validated['note'] ?? null,
             ]);
 
             foreach ($validated['items'] as $item) {
                 $product = Product::findOrFail($item['product_id']);
-                $subtotal = $product->price * $item['quantity'];
-                $total += $subtotal;
+                // Use discounted price if product has active promo
+                $unitPrice = $product->has_promo ? $product->discounted_price : $product->price;
+                $itemSubtotal = $unitPrice * $item['quantity'];
+                
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $product->id,
                     'quantity' => $item['quantity'],
-                    'unit_price' => $product->price,
-                    'subtotal' => $subtotal,
+                    'unit_price' => $unitPrice,
+                    'subtotal' => $itemSubtotal,
                 ]);
             }
-            $order->update(['total_price' => $total]);
+            
             DB::commit();
             return redirect()->route('orders.show', $order->id)->with('success', 'Pesanan berhasil dibuat!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Gagal membuat pesanan.']);
+            return back()->withErrors(['error' => 'Gagal membuat pesanan: ' . $e->getMessage()]);
         }
     }
 

@@ -19,7 +19,13 @@ class ProductController extends Controller
         ->withAvg(['testimonials as average_rating' => function($query) {
             $query->where('is_approved', true);
         }], 'rating')
-        ->get();
+        ->get()
+        ->map(function ($product) {
+            $product->has_promo = $product->has_promo;
+            $product->discounted_price = $product->discounted_price;
+            $product->promo_discount = $product->promo_discount;
+            return $product;
+        });
         
         return Inertia::render('User/DaftarKue', [
             'products' => $products,
@@ -44,6 +50,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
+            'is_best_seller' => 'boolean',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
         if ($request->hasFile('image')) {
@@ -66,6 +73,11 @@ class ProductController extends Controller
             $query->where('is_approved', true);
         }], 'rating')
         ->findOrFail($id);
+        
+        // Add promo calculations
+        $product->has_promo = $product->has_promo;
+        $product->discounted_price = $product->discounted_price;
+        $product->promo_discount = $product->promo_discount;
         
         return Inertia::render('User/DetailKue', [
             'product' => $product,
@@ -90,6 +102,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
+            'is_best_seller' => 'boolean',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
         $product = Product::findOrFail($id);
@@ -113,7 +126,35 @@ class ProductController extends Controller
 
     public function featured()
     {
-        $products = Product::orderByDesc('id')->take(3)->get();
+        $products = Product::orderByDesc('id')
+            ->take(3)
+            ->get()
+            ->map(function ($product) {
+                $product->has_promo = $product->has_promo;
+                $product->discounted_price = $product->discounted_price;
+                $product->promo_discount = $product->promo_discount;
+                return $product;
+            });
+        return response()->json($products);
+    }
+
+    public function bestSellers()
+    {
+        $products = Product::bestSeller()
+            ->withCount(['testimonials as review_count' => function($query) {
+                $query->where('is_approved', true);
+            }])
+            ->withAvg(['testimonials as average_rating' => function($query) {
+                $query->where('is_approved', true);
+            }], 'rating')
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function ($product) {
+                $product->has_promo = $product->has_promo;
+                $product->discounted_price = $product->discounted_price;
+                $product->promo_discount = $product->promo_discount;
+                return $product;
+            });
         return response()->json($products);
     }
 
@@ -136,6 +177,19 @@ class ProductController extends Controller
             'totalProduk' => $totalProduk,
             'totalPesanan' => $totalPesanan,
             'penjualanBulanIni' => $penjualanBulanIni,
+        ]);
+    }
+
+    public function toggleBestSeller(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+        $product->is_best_seller = !$product->is_best_seller;
+        $product->save();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Status best seller berhasil diubah!',
+            'is_best_seller' => $product->is_best_seller
         ]);
     }
 }

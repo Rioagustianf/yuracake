@@ -86,7 +86,7 @@ export default function TestimonialSection() {
     const currentTestimonial = testimonials[currentIndex];
 
     return (
-        <section className="py-16 bg-gradient-to-br from-pink-50 to-purple-50">
+        <section className="py-16 bg-gradient-to-tl from-pink-200 via-pink-50 to-pink-50">
             <div className="max-w-6xl mx-auto px-4">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold text-pink-700 mb-4">
@@ -101,7 +101,7 @@ export default function TestimonialSection() {
 
                 <div className="relative">
                     {/* Main Testimonial Display */}
-                    <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12 max-w-4xl mx-auto">
+                    <div className="bg-pink-200/40 rounded-2xl shadow-lg p-8 md:p-12 max-w-4xl mx-auto">
                         <div className="text-center">
                             <Quote className="w-12 h-12 text-pink-400 mx-auto mb-6" />
 
@@ -115,7 +115,7 @@ export default function TestimonialSection() {
                                 {renderStars(currentTestimonial.rating)}
                             </div>
 
-                            <div className="border-t pt-6">
+                            <div className="border-t border-pink-700 pt-6">
                                 <h4 className="font-semibold text-gray-900 text-lg">
                                     {currentTestimonial.customer_name}
                                 </h4>

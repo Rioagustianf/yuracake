@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "@inertiajs/inertia-react";
+import { Percent, Tag } from "lucide-react";
+import { formatNumber } from "../../utils/currency";
 
 export default function ProdukUnggulan() {
     const [produkList, setProdukList] = useState([]);
@@ -18,8 +20,18 @@ export default function ProdukUnggulan() {
                     {produkList.map((produk, idx) => (
                         <div
                             key={produk.id}
-                            className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col"
+                            className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col relative"
                         >
+                            {/* Promo Badge */}
+                            {produk.has_promo && produk.promo_discount > 0 && (
+                                <div className="absolute top-2 left-2 z-10">
+                                    <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                        <Percent className="w-3 h-3" />
+                                        Promo
+                                    </div>
+                                </div>
+                            )}
+
                             <img
                                 src={`/storage/${produk.image}`}
                                 alt={produk.name}
@@ -30,9 +42,26 @@ export default function ProdukUnggulan() {
                                     {produk.name}
                                 </div>
                                 <div className="font-bold text-gray-800 mb-2">
-                                    Rp{" "}
-                                    {Number(produk.price).toLocaleString(
-                                        "id-ID"
+                                    {produk.has_promo &&
+                                    produk.promo_discount > 0 ? (
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-lg text-red-600">
+                                                    Rp{" "}
+                                                    {formatNumber(
+                                                        produk.discounted_price
+                                                    )}
+                                                </span>
+                                                <Tag className="w-4 h-4 text-red-500" />
+                                            </div>
+                                            <div className="text-sm text-gray-500 line-through">
+                                                Rp {formatNumber(produk.price)}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <span>
+                                            Rp {formatNumber(produk.price)}
+                                        </span>
                                     )}
                                 </div>
                                 <Link

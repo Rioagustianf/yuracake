@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Inertia } from "@inertiajs/inertia";
 import { Filter, Download, FileText } from "lucide-react";
 import AdminLayout from "../../Components/Admin/AdminLayout";
+import { formatNumber } from "../../utils/currency";
 
 export default function Laporan({ orders = [], filter = "all" }) {
     const [selectedFilter, setSelectedFilter] = useState(filter);
@@ -132,7 +133,7 @@ export default function Laporan({ orders = [], filter = "all" }) {
                             Total Penjualan
                         </div>
                         <div className="text-blue-800 text-lg font-bold">
-                            Rp {totalPenjualan.toLocaleString("id-ID")}
+                            Rp {formatNumber(totalPenjualan)}
                         </div>
                     </div>
                     <div className="bg-white rounded-lg p-3 border border-blue-200">
@@ -141,9 +142,9 @@ export default function Laporan({ orders = [], filter = "all" }) {
                         </div>
                         <div className="text-blue-800 text-lg font-bold">
                             {orders.length > 0
-                                ? `Rp ${Math.round(
-                                      totalPenjualan / orders.length
-                                  ).toLocaleString("id-ID")}`
+                                ? `Rp ${formatNumber(
+                                      Math.round(totalPenjualan / orders.length)
+                                  )}`
                                 : "Rp 0"}
                         </div>
                     </div>
@@ -211,10 +212,7 @@ export default function Laporan({ orders = [], filter = "all" }) {
                                         {order.customer_address}
                                     </td>
                                     <td className="px-3 py-2 whitespace-nowrap">
-                                        Rp{" "}
-                                        {Number(
-                                            order.total_price
-                                        ).toLocaleString("id-ID")}
+                                        Rp {formatNumber(order.total_price)}
                                     </td>
                                     <td className="px-3 py-2 whitespace-nowrap">
                                         <span
